@@ -31,8 +31,9 @@ var _ = Describe("Action", func() {
 
 	BeforeEach(func() {
 		cfg = config.Config{
-			ApiURL:  "pivotal.io",
-			AuthURL: "example.com",
+			ApiURL:      "pivotal.io",
+			AuthURL:     "example.com",
+			AccessToken: "test access token",
 		}
 		subject = NewAction(&repository, cfg)
 

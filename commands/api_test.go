@@ -5,6 +5,8 @@ import (
 
 	"os"
 
+	"fmt"
+
 	"github.com/cloudfoundry-incubator/credhub-cli/config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,7 +15,7 @@ import (
 	. "github.com/onsi/gomega/ghttp"
 )
 
-var _ = Describe("API", func() {
+var _ = FDescribe("API", func() {
 
 	ItBehavesLikeHelp("api", "a", func(session *Session) {
 		Expect(session.Err).To(Say("api"))
@@ -106,34 +108,43 @@ var _ = Describe("API", func() {
 		Expect(authServer.ReceivedRequests()).Should(HaveLen(0))
 	})
 
-	Context("when the provided server url's scheme is https", func() {
+	FContext("when the provided server url's scheme is https", func() {
 		var (
 			theServer    *Server
 			theServerUrl string
 		)
 
 		BeforeEach(func() {
+			fmt.Println("start of inner before")
 			theServer = NewServer()
 			theServerUrl = setUpServer(theServer)
+			fmt.Println("end of inner before")
 		})
 
 		AfterEach(func() {
 			theServer.Close()
 		})
 
-		It("sets the target URL", func() {
+		FIt("sets the target URL", func() {
+			fmt.Println("start of test")
 			session := runCommand("api", theServerUrl)
+			fmt.Println("a")
 
 			Eventually(session).Should(Exit(0))
+			fmt.Println("b")
 
 			session = runCommand("api")
+			fmt.Println("c")
 
 			Eventually(session).Should(Exit(0))
 			Eventually(session.Out).Should(Say(theServerUrl))
 
+			fmt.Println("d")
 			cfg := config.ReadConfig()
+			fmt.Println("e")
 
 			Expect(cfg.AuthURL).To(Equal("https://example.com"))
+			fmt.Println("f")
 		})
 
 		It("sets the target URL using a flag", func() {
@@ -286,7 +297,7 @@ var _ = Describe("API", func() {
 		})
 	})
 
-	Context("when the provided server url's scheme is http", func() {
+	XContext("when the provided server url's scheme is http", func() {
 		var (
 			httpServer *Server
 		)

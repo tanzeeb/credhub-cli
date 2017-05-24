@@ -9,9 +9,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/http"
+	//"net/http"
 	"os"
 	"os/exec"
+	//"runtime"
+	"net/http"
 	"runtime"
 	"testing"
 )
@@ -73,6 +75,7 @@ var (
 )
 
 var _ = BeforeEach(func() {
+	fmt.Println("start of outer before")
 	var err error
 	homeDir, err = ioutil.TempDir("", "cm-test")
 	Expect(err).NotTo(HaveOccurred())
@@ -83,9 +86,21 @@ var _ = BeforeEach(func() {
 		os.Setenv("HOME", homeDir)
 	}
 
-	server = NewServer()
-
 	authServer = NewServer()
+
+	authServer.AppendHandlers(
+		CombineHandlers(
+			VerifyRequest("POST", "/oauth/token/"),
+			RespondWith(http.StatusOK, `{
+			"access_token":"test-access-token",
+			"refresh_token":"test-refresh-token",
+			"token_type":"password",
+			"expires_in":123456789
+			}`),
+		),
+	)
+
+	server = NewServer()
 
 	server.AppendHandlers(
 		CombineHandlers(
@@ -98,7 +113,13 @@ var _ = BeforeEach(func() {
 	)
 
 	session := runCommand("api", server.URL())
+	session = runCommand("login", "-u", "test-username", "-p", "test-password")
+
+	server.Reset()
+	authServer.Reset()
+
 	Eventually(session).Should(Exit(0))
+	fmt.Println("end of outer before")
 })
 
 var _ = AfterEach(func() {
