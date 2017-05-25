@@ -96,8 +96,14 @@ func NewRegenerateCredentialRequest(config config.Config, identifier string) *ht
 	return newCredentialRequest("POST", config, identifier, regenerateRequest)
 }
 
-func NewGetCredentialRequest(config config.Config, identifier string) *http.Request {
-	return newCredentialRequest("GET", config, identifier, nil)
+func NewGetCredentialByNameRequest(config config.Config, name string) *http.Request {
+	return newCredentialRequest("GET", config, name, nil)
+}
+
+func NewGetCredentialByIdRequest(config config.Config, id string) *http.Request {
+	url := config.ApiURL + "/api/v1/data/" + url.QueryEscape(id)
+
+	return newRequest("GET", config, url, nil)
 }
 
 func NewDeleteCredentialRequest(config config.Config, identifier string) *http.Request {
