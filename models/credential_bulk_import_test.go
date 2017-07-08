@@ -9,7 +9,7 @@ import (
 
 var _ = Describe("CredentialBulkImport", func() {
 	Describe("readBytes()", func() {
-		It("parses YAML", func() {
+		FIt("parses YAML", func() {
 			var credentialBulkImport models.CredentialBulkImport
 			err := credentialBulkImport.ReadBytes(
 				[]byte(
@@ -70,10 +70,17 @@ var _ = Describe("CredentialBulkImport", func() {
   type: user
   value:
     username: covfefe
-    password: jidiofj1239i1293i12n3`))
+    password: jidiofj1239i1293i12n3
+- name: /director/deployment/json
+  type: json
+  value:
+    arbitrary_object:
+      nested_array:
+      - array_val1
+      - array_object_subvalue: covfefe`))
 
 			Expect(err).To(BeNil())
-			Expect(len(credentialBulkImport.Credentials)).To(Equal(7))
+			Expect(len(credentialBulkImport.Credentials)).To(Equal(8))
 			Expect(credentialBulkImport.Credentials[0].Name).To(Equal("/director/deployment/blobstore - agent"))
 			Expect(credentialBulkImport.Credentials[1].Name).To(Equal("/director/deployment/blobstore - director"))
 			Expect(credentialBulkImport.Credentials[2].Name).To(Equal("/director/deployment/bosh-ca"))
@@ -88,6 +95,7 @@ var _ = Describe("CredentialBulkImport", func() {
 			Expect(credentialBulkImport.Credentials[4].Type).To(Equal("rsa"))
 			Expect(credentialBulkImport.Credentials[5].Type).To(Equal("ssh"))
 			Expect(credentialBulkImport.Credentials[6].Type).To(Equal("user"))
+			Expect(credentialBulkImport.Credentials[7].Type).To(Equal("json"))
 
 			Expect(credentialBulkImport.Credentials[0].Value.(string)).To(Equal("gx4ll8193j5rw0wljgqo"))
 			Expect(credentialBulkImport.Credentials[1].Value.(string)).To(Equal("y14ck84ef51dnchgk4kp"))
@@ -125,6 +133,15 @@ var _ = Describe("CredentialBulkImport", func() {
 			Expect(err).To(BeNil())
 			Expect(user.Username).To(ContainSubstring(`covfefe`))
 			Expect(user.Password).To(ContainSubstring(`jidiofj1239i1293i12n3`))
+
+			jsonAsMap := credentialBulkImport.Credentials[7].Value.(map[string]interface{})
+			Expect(jsonAsMap["arbitrary_object"]).NotTo(BeNil())
+			nestedArray := jsonAsMap["arbitrary_object"].([]interface{})
+			Expect(nestedArray).NotTo(BeNil())
+			Expect(len(nestedArray)).To(Equal(2))
+			Expect(nestedArray[0]).To(Equal("array_val1"))
+			secondArrayValue := nestedArray[1].(map[string]interface{})
+			Expect(secondArrayValue["array_object_subvalue"]).To(Equal("covfefe"))
 		})
 	})
 
