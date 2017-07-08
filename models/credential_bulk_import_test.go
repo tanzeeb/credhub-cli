@@ -7,9 +7,13 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+// It seems silly to duplicate these tests since we know the code paths are the same
+// can we delete most of one test, leaving behind just enough to show that it's still basically working
+// and trust that if we ever make these use different code paths (super unlikely) that our future
+// teammates will do the right thing? -- Phil
 var _ = Describe("CredentialBulkImport", func() {
 	Describe("readBytes()", func() {
-		FIt("parses YAML", func() {
+		It("parses YAML", func() {
 			var credentialBulkImport models.CredentialBulkImport
 			err := credentialBulkImport.ReadBytes(
 				[]byte(
@@ -136,7 +140,8 @@ var _ = Describe("CredentialBulkImport", func() {
 
 			jsonAsMap := credentialBulkImport.Credentials[7].Value.(map[string]interface{})
 			Expect(jsonAsMap["arbitrary_object"]).NotTo(BeNil())
-			nestedArray := jsonAsMap["arbitrary_object"].([]interface{})
+			arbitraryObject := jsonAsMap["arbitrary_object"].(map[string]interface{})
+			nestedArray := arbitraryObject["nested_array"].([]interface{})
 			Expect(nestedArray).NotTo(BeNil())
 			Expect(len(nestedArray)).To(Equal(2))
 			Expect(nestedArray[0]).To(Equal("array_val1"))
@@ -151,7 +156,7 @@ var _ = Describe("CredentialBulkImport", func() {
 			err := credentialBulkImport.ReadFile("../test/test_import_file.yml")
 
 			Expect(err).To(BeNil())
-			Expect(len(credentialBulkImport.Credentials)).To(Equal(7))
+			Expect(len(credentialBulkImport.Credentials)).To(Equal(8))
 			Expect(credentialBulkImport.Credentials[0].Name).To(Equal("/director/deployment/blobstore - agent"))
 			Expect(credentialBulkImport.Credentials[1].Name).To(Equal("/director/deployment/blobstore - director"))
 			Expect(credentialBulkImport.Credentials[2].Name).To(Equal("/director/deployment/bosh-ca"))
@@ -203,6 +208,16 @@ var _ = Describe("CredentialBulkImport", func() {
 			Expect(err).To(BeNil())
 			Expect(user.Username).To(ContainSubstring(`covfefe`))
 			Expect(user.Password).To(ContainSubstring(`jidiofj1239i1293i12n3`))
+
+			jsonAsMap := credentialBulkImport.Credentials[7].Value.(map[string]interface{})
+			Expect(jsonAsMap["arbitrary_object"]).NotTo(BeNil())
+			arbitraryObject := jsonAsMap["arbitrary_object"].(map[string]interface{})
+			nestedArray := arbitraryObject["nested_array"].([]interface{})
+			Expect(nestedArray).NotTo(BeNil())
+			Expect(len(nestedArray)).To(Equal(2))
+			Expect(nestedArray[0]).To(Equal("array_val1"))
+			secondArrayValue := nestedArray[1].(map[string]interface{})
+			Expect(secondArrayValue["array_object_subvalue"]).To(Equal("covfefe"))
 		})
 	})
 })

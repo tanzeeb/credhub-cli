@@ -29,10 +29,10 @@ func (credentialBulkImport *CredentialBulkImport) ReadBytes(data []byte) error {
 
 	// Having trouble because we're trying to convert in place and
 	// "credential" here is a copy, not a reference
-	for _, credential := range credentialBulkImport.Credentials {
+	for i, credential := range credentialBulkImport.Credentials {
 		switch valueAsMap := credential.Value.(type) {
 		case map[interface{}]interface{}:
-			credential.Value = convertToMapStringInterface(valueAsMap)
+			credentialBulkImport.Credentials[i].Value = convertToMapStringInterface(valueAsMap)
 		default:
 		}
 	}

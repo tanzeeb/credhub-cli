@@ -32,3 +32,10 @@ credentials:
   value:
     username: covfefe
     password: jidiofj1239i1293i12n3
+- name: /director/deployment/json
+  type: json
+  value:
+    arbitrary_object:
+      nested_array:
+      - array_val1
+      - array_object_subvalue: covfefe
