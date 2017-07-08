@@ -11,6 +11,7 @@ import (
 // can we delete most of one test, leaving behind just enough to show that it's still basically working
 // and trust that if we ever make these use different code paths (super unlikely) that our future
 // teammates will do the right thing? -- Phil
+// P.S. this would all be much happier if it were seven different tests instead of one giant test, I think
 var _ = Describe("CredentialBulkImport", func() {
 	Describe("readBytes()", func() {
 		It("parses YAML", func() {
@@ -81,7 +82,8 @@ var _ = Describe("CredentialBulkImport", func() {
     arbitrary_object:
       nested_array:
       - array_val1
-      - array_object_subvalue: covfefe`))
+      - array_object_subvalue: covfefe
+      - [sub_array_val1, sub_array_val2]`))
 
 			Expect(err).To(BeNil())
 			Expect(len(credentialBulkImport.Credentials)).To(Equal(8))
@@ -143,10 +145,13 @@ var _ = Describe("CredentialBulkImport", func() {
 			arbitraryObject := jsonAsMap["arbitrary_object"].(map[string]interface{})
 			nestedArray := arbitraryObject["nested_array"].([]interface{})
 			Expect(nestedArray).NotTo(BeNil())
-			Expect(len(nestedArray)).To(Equal(2))
+			Expect(len(nestedArray)).To(Equal(3))
 			Expect(nestedArray[0]).To(Equal("array_val1"))
 			secondArrayValue := nestedArray[1].(map[string]interface{})
 			Expect(secondArrayValue["array_object_subvalue"]).To(Equal("covfefe"))
+			arrayArray := nestedArray[2].([]interface{})
+			Expect(arrayArray[0].(string)).To(Equal("sub_array_val1"))
+			Expect(arrayArray[1].(string)).To(Equal("sub_array_val2"))
 		})
 	})
 

@@ -3,6 +3,8 @@ package models
 import (
 	"io/ioutil"
 
+	"fmt"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -27,8 +29,6 @@ func (credentialBulkImport *CredentialBulkImport) ReadFile(filepath string) erro
 func (credentialBulkImport *CredentialBulkImport) ReadBytes(data []byte) error {
 	err := yaml.Unmarshal(data, credentialBulkImport)
 
-	// Having trouble because we're trying to convert in place and
-	// "credential" here is a copy, not a reference
 	for i, credential := range credentialBulkImport.Credentials {
 		switch valueAsMap := credential.Value.(type) {
 		case map[interface{}]interface{}:
@@ -65,7 +65,8 @@ func convertInterfaceArrayValues(array []interface{}) []interface{} {
 			array[i] = typedValue
 		case map[interface{}]interface{}:
 			array[i] = convertToMapStringInterface(typedValue)
-			// need case for array
+		case []interface{}:
+			array[i] = convertInterfaceArrayValues(typedValue)
 		}
 	}
 	return array
