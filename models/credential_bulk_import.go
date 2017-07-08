@@ -3,8 +3,6 @@ package models
 import (
 	"io/ioutil"
 
-	"fmt"
-
 	"gopkg.in/yaml.v2"
 )
 
@@ -32,7 +30,7 @@ func (credentialBulkImport *CredentialBulkImport) ReadBytes(data []byte) error {
 	for i, credential := range credentialBulkImport.Credentials {
 		switch valueAsMap := credential.Value.(type) {
 		case map[interface{}]interface{}:
-			credentialBulkImport.Credentials[i].Value = convertToMapStringInterface(valueAsMap)
+			credentialBulkImport.Credentials[i].Value = unpackMapIntoStringToInterface(valueAsMap)
 		default:
 		}
 	}
@@ -40,34 +38,30 @@ func (credentialBulkImport *CredentialBulkImport) ReadBytes(data []byte) error {
 	return err
 }
 
-func convertToMapStringInterface(valueAsMap map[interface{}]interface{}) map[string]interface{} {
-	mapStringInterface := make(map[string]interface{})
-	for key, value := range valueAsMap {
-		var desiredMapValue interface{}
-		switch nestedValue := value.(type) {
-		case string:
-			desiredMapValue = nestedValue
-		case map[interface{}]interface{}:
-			desiredMapValue = convertToMapStringInterface(nestedValue)
-		case []interface{}:
-			desiredMapValue = convertInterfaceArrayValues(nestedValue)
-		}
-
-		mapStringInterface[key.(string)] = desiredMapValue
+func unpackValueIntoStringToInterface(value interface{}) interface{} {
+	var unpackedValue interface{}
+	switch typedValue := value.(type) {
+	case map[interface{}]interface{}:
+		unpackedValue = unpackMapIntoStringToInterface(typedValue)
+	case []interface{}:
+		unpackedValue = unpackArrayIntoStringToInterface(typedValue)
+	default:
+		unpackedValue = value
 	}
-	return mapStringInterface
+	return unpackedValue
 }
 
-func convertInterfaceArrayValues(array []interface{}) []interface{} {
+func unpackMapIntoStringToInterface(interfaceToInterfaceMap map[interface{}]interface{}) map[string]interface{} {
+	stringToInterfaceMap := make(map[string]interface{})
+	for key, value := range interfaceToInterfaceMap {
+		stringToInterfaceMap[key.(string)] = unpackValueIntoStringToInterface(value)
+	}
+	return stringToInterfaceMap
+}
+
+func unpackArrayIntoStringToInterface(array []interface{}) []interface{} {
 	for i, value := range array {
-		switch typedValue := value.(type) {
-		case string:
-			array[i] = typedValue
-		case map[interface{}]interface{}:
-			array[i] = convertToMapStringInterface(typedValue)
-		case []interface{}:
-			array[i] = convertInterfaceArrayValues(typedValue)
-		}
+		array[i] = unpackValueIntoStringToInterface(value)
 	}
 	return array
 }
