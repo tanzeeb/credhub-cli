@@ -192,6 +192,29 @@ value:
 		})
 	})
 
+	Describe("importing a file with json credentials", func() {
+		It("sets the json credentials", func() {
+			setupPutJsonServer("/director/deployment/json1", `{"trump_tweet" : "covfefe"}`)
+
+			session := runCommand("import", "-f", "../test/test_json_import_file.yml")
+
+			Eventually(session).Should(Exit(0))
+			Eventually(session.Out).Should(Say(`name: /director/deployment/json1
+type: json
+value:
+  trump_tweet: covfefe`))
+		})
+
+		It("prevents misconfigured json from creating a request", func() {
+			setupPutJsonServer("/director/deployment/json1", `{"trump_tweet": "covfefe""`)
+
+			session := runCommand("import", "-f", "../test/test_json_import_file.yml")
+
+			Eventually(session).Should(Exit(0))
+			Eventually(session.Err).Should(Say(`''expected a map, got string''`))
+		})
+	})
+
 	Describe("importing a file with mixed credentials", func() {
 		It("sets the all credentials", func() {
 			SetupOverwritePutValueServer("/director/deployment/blobstore - agent", "password", "gx4ll8193j5rw0wljgqo", true)

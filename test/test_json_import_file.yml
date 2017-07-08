@@ -1,0 +1,5 @@
+credentials:
+- name: /director/deployment/json1
+  type: json
+  value:
+    trump_tweet: covfefe

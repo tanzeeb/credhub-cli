@@ -7,6 +7,8 @@ import (
 
 	"os"
 
+	"encoding/json"
+
 	"github.com/cloudfoundry-incubator/credhub-cli/actions"
 	"github.com/cloudfoundry-incubator/credhub-cli/client"
 	"github.com/cloudfoundry-incubator/credhub-cli/config"
@@ -80,6 +82,13 @@ func setCredentials(bulkImport models.CredentialBulkImport) {
 				continue
 			}
 			request = client.NewSetUserRequest(cfg, credential.Name, user.Username, user.Password, true)
+		case "json":
+			jsonString, err := json.Marshal(credential.Value)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%v\n", err)
+				continue
+			}
+			request = client.NewSetJsonCredentialRequest(cfg, credential.Type, credential.Name, string(jsonString), true)
 		default:
 			fmt.Fprintf(os.Stderr, "unrecognized type: %s", credential.Type)
 		}
