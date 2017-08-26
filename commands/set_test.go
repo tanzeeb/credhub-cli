@@ -435,7 +435,7 @@ var _ = Describe("Set", func() {
 			response := fmt.Sprintf(USER_WITHOUT_USERNAME_CREDENTIAL_RESPONSE_YAML, "my-username-credential", "test-password", "passw0rd-H4$h")
 
 			Eventually(session.Out).Should(Say("password:"))
-			Eventually(session.Wait("10s").Out.Contents()).Should(ContainSubstring(response))
+			Eventually(string(session.Wait("10s").Out.Contents())).Should(ContainSubstring(response))
 			Eventually(session).Should(Exit(0))
 		})
 

@@ -1,21 +1,23 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
+
+	yaml "gopkg.in/yaml.v2"
 
 	"net/http"
 
-	"github.com/cloudfoundry-incubator/credhub-cli/actions"
 	"github.com/cloudfoundry-incubator/credhub-cli/client"
 	"github.com/cloudfoundry-incubator/credhub-cli/config"
-	"github.com/cloudfoundry-incubator/credhub-cli/repositories"
+	"github.com/cloudfoundry-incubator/credhub-cli/credhub"
+	"github.com/cloudfoundry-incubator/credhub-cli/credhub/credentials/values"
 
 	"bufio"
 	"os"
 	"strings"
 
 	"github.com/cloudfoundry-incubator/credhub-cli/errors"
-	"github.com/cloudfoundry-incubator/credhub-cli/models"
 	"github.com/cloudfoundry-incubator/credhub-cli/util"
 )
 
@@ -50,21 +52,105 @@ func (cmd SetCommand) Execute([]string) error {
 	}
 
 	cfg := config.ReadConfig()
-	repository := repositories.NewCredentialRepository(client.NewHttpClient(cfg))
+	ch, err := cfg.ApiClient()
+	if err != nil {
+		return err
+	}
+	//repository := repositories.NewCredentialRepository(client.NewHttpClient(cfg))
 
-	action := actions.NewAction(repository, &cfg)
-	request, err := MakeRequest(cmd, cfg)
+	//action := actions.NewAction(repository, &cfg)
+	//request, err := MakeRequest(cmd, cfg)
+	//if err != nil {
+	//return err
+	//}
+
+	//credential, err := action.DoAction(request, cmd.CredentialIdentifier)
+	credential, err := setCredential(ch, cmd)
 	if err != nil {
 		return err
 	}
 
-	credential, err := action.DoAction(request, cmd.CredentialIdentifier)
-	if err != nil {
-		return err
-	}
-	models.Println(credential, cmd.OutputJson)
+	prettyPrint(credential, cmd.OutputJson)
 
 	return nil
+}
+
+func setCredential(ch *credhub.CredHub, cmd SetCommand) (interface{}, error) {
+	switch cmd.Type {
+	case "ssh":
+		publicKey, err := util.ReadFileOrStringFromField(cmd.Public)
+		if err != nil {
+			return nil, err
+		}
+
+		privateKey, err := util.ReadFileOrStringFromField(cmd.Private)
+		if err != nil {
+			return nil, err
+		}
+
+		value := values.SSH{
+			PublicKey:  publicKey,
+			PrivateKey: privateKey,
+		}
+
+		return ch.SetSSH(cmd.CredentialIdentifier, value, !cmd.NoOverwrite)
+	case "rsa":
+		publicKey, err := util.ReadFileOrStringFromField(cmd.Public)
+		if err != nil {
+			return nil, err
+		}
+
+		privateKey, err := util.ReadFileOrStringFromField(cmd.Private)
+		if err != nil {
+			return nil, err
+		}
+
+		value := values.RSA{
+			PublicKey:  publicKey,
+			PrivateKey: privateKey,
+		}
+
+		return ch.SetRSA(cmd.CredentialIdentifier, value, !cmd.NoOverwrite)
+	case "certificate":
+		root, err := util.ReadFileOrStringFromField(cmd.Root)
+		if err != nil {
+			return nil, err
+		}
+
+		certificate, err := util.ReadFileOrStringFromField(cmd.Certificate)
+		if err != nil {
+			return nil, err
+		}
+
+		privateKey, err := util.ReadFileOrStringFromField(cmd.Private)
+		if err != nil {
+			return nil, err
+		}
+
+		value := values.Certificate{
+			Ca:          root,
+			CaName:      cmd.CaName,
+			Certificate: certificate,
+			PrivateKey:  privateKey,
+		}
+
+		return ch.SetCertificate(cmd.CredentialIdentifier, value, !cmd.NoOverwrite)
+	case "user":
+		value := values.User{
+			Username: cmd.Username,
+			Password: cmd.Password,
+		}
+		return ch.SetUser(cmd.CredentialIdentifier, value, !cmd.NoOverwrite)
+	case "password":
+		value := values.Password(cmd.Password)
+		return ch.SetPassword(cmd.CredentialIdentifier, value, !cmd.NoOverwrite)
+	case "json":
+		value := json.RawMessage(cmd.Value)
+		return ch.SetJSON(cmd.CredentialIdentifier, value, !cmd.NoOverwrite)
+	default:
+		value := values.Value(cmd.Value)
+		return ch.SetValue(cmd.CredentialIdentifier, value, !cmd.NoOverwrite)
+	}
 }
 
 func MakeRequest(cmd SetCommand, config config.Config) (*http.Request, error) {
@@ -120,4 +206,16 @@ func promptForInput(prompt string, value *string) {
 	reader := bufio.NewReader(os.Stdin)
 	val, _ := reader.ReadString('\n')
 	*value = string(strings.TrimSpace(val))
+}
+
+func prettyPrint(v interface{}, asJson bool) {
+	var b []byte
+
+	if asJson {
+		b, _ = json.MarshalIndent(v, "", "\t")
+	} else {
+		b, _ = yaml.Marshal(v)
+	}
+
+	fmt.Println(string(b))
 }

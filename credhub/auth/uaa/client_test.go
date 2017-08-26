@@ -19,7 +19,7 @@ var _ = Describe("Client", func() {
 
 				Expect(r.Method).To(Equal(http.MethodPost))
 
-				Expect(r.URL.Path).To(Equal("/oauth/token"))
+				Expect(r.URL.Path).To(Equal("/oauth/token/"))
 
 				Expect(r.Header.Get("Accept")).To(Equal("application/json"))
 				Expect(r.Header.Get("Content-Type")).To(Equal("application/x-www-form-urlencoded"))
@@ -53,7 +53,7 @@ var _ = Describe("Client", func() {
 
 				Expect(r.Method).To(Equal(http.MethodPost))
 
-				Expect(r.URL.Path).To(Equal("/oauth/token"))
+				Expect(r.URL.Path).To(Equal("/oauth/token/"))
 
 				Expect(r.Header.Get("Accept")).To(Equal("application/json"))
 				Expect(r.Header.Get("Content-Type")).To(Equal("application/x-www-form-urlencoded"))
@@ -91,7 +91,7 @@ var _ = Describe("Client", func() {
 
 				Expect(r.Method).To(Equal(http.MethodPost))
 
-				Expect(r.URL.Path).To(Equal("/oauth/token"))
+				Expect(r.URL.Path).To(Equal("/oauth/token/"))
 
 				Expect(r.Header.Get("Accept")).To(Equal("application/json"))
 				Expect(r.Header.Get("Content-Type")).To(Equal("application/x-www-form-urlencoded"))

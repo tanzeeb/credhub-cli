@@ -6,6 +6,8 @@ import (
 	"os"
 	"path"
 
+	"github.com/cloudfoundry-incubator/credhub-cli/credhub"
+	"github.com/cloudfoundry-incubator/credhub-cli/credhub/auth"
 	"github.com/cloudfoundry-incubator/credhub-cli/util"
 )
 
@@ -19,6 +21,40 @@ type Config struct {
 	RefreshToken       string
 	InsecureSkipVerify bool
 	CaCerts            []string
+}
+
+// FIXME Tests!
+func (c Config) ApiClient() (*credhub.CredHub, error) {
+	var options []credhub.Option
+
+	accessToken := c.AccessToken
+	if accessToken == "revoked" {
+		accessToken = ""
+	}
+
+	refreshToken := c.RefreshToken
+	if refreshToken == "revoked" {
+		refreshToken = ""
+	}
+
+	clientId := AuthClient
+	if val := os.Getenv("CREDHUB_CLIENT"); val != "" {
+		clientId = val
+	}
+
+	clientSecret := AuthPassword
+	if val := os.Getenv("CREDHUB_SECRET"); val != "" {
+		clientSecret = val
+	}
+
+	if c.InsecureSkipVerify {
+		options = append(options, credhub.SkipTLSValidation())
+	}
+	options = append(options, credhub.AuthURL(c.AuthURL))
+	options = append(options, credhub.CaCerts(c.CaCerts...))
+	options = append(options, credhub.Auth(auth.Uaa(clientId, clientSecret, "", "", accessToken, refreshToken)))
+
+	return credhub.New(c.ApiURL, options...)
 }
 
 func ConfigDir() string {
