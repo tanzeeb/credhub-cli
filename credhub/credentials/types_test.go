@@ -12,6 +12,8 @@ import (
 )
 
 var _ = Describe("Types", func() {
+	const keyOrderMatcher = `^id:.*\nname:.*\ntype:.*\nvalue:(.*\n)+version_created_at:.*\n$`
+
 	Describe("Certificate", func() {
 		Specify("when decoding and encoding", func() {
 			var cred Certificate
@@ -43,7 +45,8 @@ value:
     -----BEGIN RSA PRIVATE KEY-----
     ...
     -----END RSA PRIVATE KEY-----
-version_created_at: 2017-01-01T04:07:18Z`
+version_created_at: 2017-01-01T04:07:18Z
+`
 
 			err := json.Unmarshal([]byte(credJson), &cred)
 
@@ -64,6 +67,7 @@ version_created_at: 2017-01-01T04:07:18Z`
 			yamlOutput, err := yaml.Marshal(cred)
 
 			Expect(yamlOutput).To(MatchYAML(credYaml))
+			Expect(string(yamlOutput)).To(MatchRegexp(keyOrderMatcher))
 		})
 	})
 
@@ -82,15 +86,15 @@ version_created_at: 2017-01-01T04:07:18Z`
       "version_created_at": "2017-01-05T01:01:01Z"
 }`
 
-			credYaml := `
-id: some-id
-name: "/example-user"
+			credYaml := `id: some-id
+name: /example-user
 type: user
 value:
-  username: some-username
   password: some-password
   password_hash: some-password-hash
-version_created_at: '2017-01-05T01:01:01Z'`
+  username: some-username
+version_created_at: 2017-01-05T01:01:01Z
+`
 
 			err := json.Unmarshal([]byte(credJson), &cred)
 
@@ -111,6 +115,7 @@ version_created_at: '2017-01-05T01:01:01Z'`
 			yamlOutput, err := yaml.Marshal(cred)
 
 			Expect(yamlOutput).To(MatchYAML(credYaml))
+			Expect(string(yamlOutput)).To(MatchRegexp(keyOrderMatcher))
 		})
 	})
 
@@ -126,12 +131,11 @@ version_created_at: '2017-01-05T01:01:01Z'`
       "version_created_at": "2017-01-05T01:01:01Z"
     }`
 
-			credYaml := `
-id: some-id
-name: "/example-password"
+			credYaml := `id: some-id
+name: /example-password
 type: password
 value: some-password
-version_created_at: '2017-01-05T01:01:01Z'
+version_created_at: 2017-01-05T01:01:01Z
 `
 
 			err := json.Unmarshal([]byte(credJson), &cred)
@@ -151,6 +155,7 @@ version_created_at: '2017-01-05T01:01:01Z'
 			yamlOutput, err := yaml.Marshal(cred)
 
 			Expect(yamlOutput).To(MatchYAML(credYaml))
+			Expect(string(yamlOutput)).To(MatchRegexp(keyOrderMatcher))
 		})
 	})
 
@@ -173,9 +178,8 @@ version_created_at: '2017-01-05T01:01:01Z'
       "version_created_at": "2017-01-01T04:07:18Z"
     }`
 
-			credYaml := `
-id: some-id
-name: "/example-json"
+			credYaml := `id: some-id
+name: /example-json
 type: json
 value:
   key: 123
@@ -183,7 +187,7 @@ value:
   - val1
   - val2
   is_true: true
-version_created_at: '2017-01-01T04:07:18Z'
+version_created_at: 2017-01-01T04:07:18Z
 `
 
 			err := json.Unmarshal([]byte(credJson), &cred)
@@ -212,6 +216,7 @@ version_created_at: '2017-01-01T04:07:18Z'
 			yamlOutput, err := yaml.Marshal(cred)
 
 			Expect(yamlOutput).To(MatchYAML(credYaml))
+			Expect(string(yamlOutput)).To(MatchRegexp(keyOrderMatcher))
 		})
 	})
 
@@ -227,12 +232,11 @@ version_created_at: '2017-01-01T04:07:18Z'
       "version_created_at": "2017-01-05T01:01:01Z"
     }`
 
-			credYaml := `
-id: some-id
-name: "/example-value"
+			credYaml := `id: some-id
+name: /example-value
 type: value
 value: some-value
-version_created_at: '2017-01-05T01:01:01Z'
+version_created_at: 2017-01-05T01:01:01Z
 `
 
 			err := json.Unmarshal([]byte(credJson), &cred)
@@ -252,6 +256,7 @@ version_created_at: '2017-01-05T01:01:01Z'
 			yamlOutput, err := yaml.Marshal(cred)
 
 			Expect(yamlOutput).To(MatchYAML(credYaml))
+			Expect(string(yamlOutput)).To(MatchRegexp(keyOrderMatcher))
 		})
 	})
 
@@ -269,14 +274,14 @@ version_created_at: '2017-01-05T01:01:01Z'
       "version_created_at": "2017-01-05T01:01:01Z"
 }`
 
-			credYaml := `
-id: some-id
-name: "/example-rsa"
+			credYaml := `id: some-id
+name: /example-rsa
 type: rsa
 value:
   public_key: some-public-key
   private_key: some-private-key
-version_created_at: '2017-01-05T01:01:01Z'`
+version_created_at: 2017-01-05T01:01:01Z
+`
 
 			err := json.Unmarshal([]byte(credJson), &cred)
 
@@ -296,6 +301,7 @@ version_created_at: '2017-01-05T01:01:01Z'`
 			yamlOutput, err := yaml.Marshal(cred)
 
 			Expect(yamlOutput).To(MatchYAML(credYaml))
+			Expect(string(yamlOutput)).To(MatchRegexp(keyOrderMatcher))
 		})
 	})
 
@@ -314,15 +320,15 @@ version_created_at: '2017-01-05T01:01:01Z'`
       "version_created_at": "2017-01-01T04:07:18Z"
     }`
 
-			credYaml := `
-id: some-id
-name: "/example-ssh"
+			credYaml := `id: some-id
+name: /example-ssh
 type: ssh
 value:
   public_key: some-public-key
   private_key: some-private-key
   public_key_fingerprint: some-public-key-fingerprint
-version_created_at: '2017-01-01T04:07:18Z'`
+version_created_at: 2017-01-01T04:07:18Z
+`
 
 			err := json.Unmarshal([]byte(credJson), &cred)
 
@@ -343,6 +349,7 @@ version_created_at: '2017-01-01T04:07:18Z'`
 			yamlOutput, err := yaml.Marshal(cred)
 
 			Expect(yamlOutput).To(MatchYAML(credYaml))
+			Expect(string(yamlOutput)).To(MatchRegexp(keyOrderMatcher))
 		})
 	})
 
@@ -351,43 +358,27 @@ version_created_at: '2017-01-01T04:07:18Z'`
 			var cred Credential
 			credJson := `{
       "id": "some-id",
-      "name": "/example-ssh",
-      "type": "ssh",
-      "value": {
-        "public_key": "some-public-key",
-        "private_key": "some-private-key",
-        "public_key_fingerprint": "some-public-key-fingerprint"
-      },
+      "name": "/example-cred",
+      "type": "password",
+      "value": "the-password",
       "version_created_at": "2017-01-01T04:07:18Z"
     }`
 
-			credYaml := `
-id: some-id
-name: "/example-ssh"
-type: ssh
-value:
-  public_key: some-public-key
-  private_key: some-private-key
-  public_key_fingerprint: some-public-key-fingerprint
-version_created_at: '2017-01-01T04:07:18Z'`
+			credYaml := `id: some-id
+name: /example-cred
+type: password
+value: the-password
+version_created_at: 2017-01-01T04:07:18Z
+`
 
 			err := json.Unmarshal([]byte(credJson), &cred)
 
 			Expect(err).To(BeNil())
 
-			jsonValueString := `{
-        "public_key": "some-public-key",
-        "private_key": "some-private-key",
-        "public_key_fingerprint": "some-public-key-fingerprint"
-      }`
-			var jsonValue map[string]interface{}
-			err = json.Unmarshal([]byte(jsonValueString), &jsonValue)
-			Expect(err).To(BeNil())
-
 			Expect(cred.Id).To(Equal("some-id"))
-			Expect(cred.Name).To(Equal("/example-ssh"))
-			Expect(cred.Type).To(Equal("ssh"))
-			Expect(cred.Value).To(Equal(jsonValue))
+			Expect(cred.Name).To(Equal("/example-cred"))
+			Expect(cred.Type).To(Equal("password"))
+			Expect(cred.Value).To(Equal("the-password"))
 			Expect(cred.VersionCreatedAt).To(Equal("2017-01-01T04:07:18Z"))
 
 			jsonOutput, err := json.Marshal(cred)
@@ -397,6 +388,7 @@ version_created_at: '2017-01-01T04:07:18Z'`
 			yamlOutput, err := yaml.Marshal(cred)
 
 			Expect(yamlOutput).To(MatchYAML(credYaml))
+			Expect(string(yamlOutput)).To(MatchRegexp(keyOrderMatcher))
 		})
 	})
 })
